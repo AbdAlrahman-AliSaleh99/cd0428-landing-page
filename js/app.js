@@ -1,62 +1,107 @@
-/**
- * 
- * Manipulating the DOM exercise.
- * Exercise programmatically builds navigation,
- * scrolls to anchors from navigation,
- * and highlights section in viewport upon scrolling.
- * 
- * Dependencies: None
- * 
- * JS Version: ES2015/ES6
- * 
- * JS Standard: ESlint
- * 
-*/
+let activeSection = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+    buildNavigation();
+    handleScrolling();
+});
 
 /**
- * Comments should be present at the beginning of each procedure and class.
- * Great to have comments before crucial code sections within the procedure.
-*/
+ * function to build navigation menu dynamically.
+ */
+function buildNavigation() {
+    const navbarList = document.getElementById('navbar__list');
+    const navSections = ['Section1', 'Section2', 'Section3', 'Section4'];
+
+    navbarList.style.display = 'flex';
+    navbarList.style.justifyContent = 'end';
+
+    navSections.forEach(section => {
+        const sectionNav = createNavItem(section);
+        navbarList.appendChild(sectionNav);
+
+        sectionNav.addEventListener('click', () => {
+            activeSection = section;
+            goToSection();
+        });
+    });
+}
 
 /**
- * Define Global Variables
- * 
-*/
-
-
-/**
- * End Global Variables
- * Start Helper Functions
- * 
-*/
-
-
+ * function to create a navigation item.
+ * @param {string} section - Section name
+ * @returns {HTMLLIElement} - Navigation list item
+ */
+function createNavItem(section) {
+    const sectionNav = document.createElement('li');
+    sectionNav.innerText = section;
+    sectionNav.classList.add('menu__link');
+    return sectionNav;
+}
 
 /**
- * End Helper Functions
- * Begin Main Functions
- * 
-*/
+ * function to handle smooth scrolling and set the selected section to active.
+ */
+function goToSection() {
+    const sectionId = getSectionIdBySectionName(activeSection);
+    const section = document.getElementById(sectionId);
 
-// build the nav
-
-
-// Add class 'active' to section when near top of viewport
-
-
-// Scroll to anchor ID using scrollTO event
-
+    if (section) {
+        scrollToSection(section);
+        setSectionActive(sectionId);
+    }
+}
 
 /**
- * End Main Functions
- * Begin Events
- * 
-*/
+ * function that return the section ID Based on Section Name
+ */
+function getSectionIdBySectionName(sectionName) {
+    return sectionName.replace(' ', '').toLowerCase();
+}
 
-// Build menu 
+/**
+ * Smoothly scrolls to the section.
+ * @param {HTMLElement} section - Section element
+ */
+function scrollToSection(section) {
+    const topPosition = section.offsetTop;
+    window.scroll({
+        top: topPosition,
+        behavior: 'smooth',
+    });
+}
 
-// Scroll to section on link click
+/**
+ * set the scrolled section class active based on ID.
+ * @param {string} activeSectionId - Active section ID
+ */
+function setSectionActive(activeSectionId) {
+    const sections = document.querySelectorAll('section');
 
-// Set sections as active
+    sections.forEach(sec => {
+        if (sec.id === activeSectionId) {
+            sec.classList.add('active');
+        } else {
+            sec.classList.remove('active');
+        }
+    });
+}
 
+/**
+ * function contain event listener to set the scrolled section class to active in view.
+ */
+function handleScrolling() {
+    const sections = document.querySelectorAll('section');
 
+    window.addEventListener('scroll', () => {
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            const isInView = rect.top >= 0 && rect.top <= window.innerHeight / 2;
+
+            if (isInView) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+    });
+}
