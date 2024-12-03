@@ -1,4 +1,5 @@
 let activeSection = '';
+let navItems = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     buildNavigation();
@@ -6,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * function to build navigation menu dynamically.
+ * Function to build the navigation menu dynamically.
  */
 function buildNavigation() {
     const navbarList = document.getElementById('navbar__list');
@@ -19,18 +20,20 @@ function buildNavigation() {
         const sectionNav = createNavItem(section);
         navbarList.appendChild(sectionNav);
 
-        sectionNav.addEventListener('click', () => {
-            const navItems = document.querySelectorAll('.menu__link');
-            navItems.forEach(nav => nav.classList.remove('active'));
-            sectionNav.classList.add('active');
+        sectionNav.addEventListener('click', (event) => {
+            event.preventDefault();
+            updateActiveNavItem(sectionNav);
             activeSection = section;
             goToSection();
         });
     });
+
+    // Initialize navItems after creating the menu
+    navItems = document.querySelectorAll('.menu__link');
 }
 
 /**
- * function to create a navigation item.
+ * Function to create a navigation item.
  * @param {string} section - Section name
  * @returns {HTMLLIElement} - Navigation list item
  */
@@ -42,7 +45,16 @@ function createNavItem(section) {
 }
 
 /**
- * function to handle smooth scrolling and set the selected section to active.
+ * Function to update the active navigation item.
+ * @param {HTMLElement} selectedNav - Selected navigation item
+ */
+function updateActiveNavItem(selectedNav) {
+    navItems.forEach(nav => nav.classList.remove('active'));
+    selectedNav.classList.add('active');
+}
+
+/**
+ * Function to handle smooth scrolling to the active section.
  */
 function goToSection() {
     const sectionId = getSectionIdBySectionName(activeSection);
@@ -50,12 +62,13 @@ function goToSection() {
 
     if (section) {
         scrollToSection(section);
-        setSectionActive(sectionId);
     }
 }
 
 /**
- * function that return the section ID Based on Section Name
+ * Function to return the section ID based on the section name.
+ * @param {string} sectionName - Section name
+ * @returns {string} - Section ID
  */
 function getSectionIdBySectionName(sectionName) {
     return sectionName.replace(' ', '').toLowerCase();
@@ -74,37 +87,31 @@ function scrollToSection(section) {
 }
 
 /**
- * set the scrolled section class active based on ID.
- * @param {string} activeSectionId - Active section ID
- */
-function setSectionActive(activeSectionId) {
-    const sections = document.querySelectorAll('section');
-
-    sections.forEach(sec => {
-        if (sec.id === activeSectionId) {
-            sec.classList.add('active');
-        } else {
-            sec.classList.remove('active');
-        }
-    });
-}
-
-/**
- * function contain event listener to set the scrolled section class to active in view.
+ * Function to handle setting the active class based on the scrolled section in view.
  */
 function handleScrolling() {
     const sections = document.querySelectorAll('section');
 
     window.addEventListener('scroll', () => {
+        let activeSect = null;
+
         sections.forEach(section => {
             const rect = section.getBoundingClientRect();
             const isInView = rect.top >= 0 && rect.top <= window.innerHeight / 2;
 
             if (isInView) {
-                section.classList.add('active');
-            } else {
-                section.classList.remove('active');
+                activeSect = section;
             }
         });
+
+        if (activeSect) {
+            const activeNavItem = Array.from(navItems).find(nav => 
+                nav.innerText.toLowerCase() === activeSect.id
+            );
+
+            if (activeNavItem) {
+                updateActiveNavItem(activeNavItem);
+            }
+        }
     });
 }
