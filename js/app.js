@@ -20,6 +20,9 @@ function buildNavigation() {
         navbarList.appendChild(sectionNav);
 
         sectionNav.addEventListener('click', () => {
+            const navItems = document.querySelectorAll('.menu__link');
+            navItems.forEach(nav => nav.classList.remove('active'));
+            sectionNav.classList.add('active');
             activeSection = section;
             goToSection();
         });
