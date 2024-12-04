@@ -1,117 +1,69 @@
-let activeSection = '';
-let navItems = [];
-
 document.addEventListener('DOMContentLoaded', () => {
     buildNavigation();
-    handleScrolling();
+    addSmoothScroll();
+    window.addEventListener('scroll', highlightActiveSection);
 });
 
 /**
- * Function to build the navigation menu dynamically.
+ * Function to dynamically build the navigation menu.
  */
 function buildNavigation() {
-    const navbarList = document.getElementById('navbar__list');
-    const navSections = ['Section1', 'Section2', 'Section3', 'Section4'];
+    const sections = Array.from(document.querySelectorAll('section'));
+    const menu = document.getElementById('navbar__list');
 
-    navbarList.style.display = 'flex';
-    navbarList.style.justifyContent = 'end';
+    sections.forEach((section) => {
+        const listItem = document.createElement('li');
+        const listItemLink = document.createElement('a');
+        listItemLink.classList.add('menu__link');
+        listItemLink.textContent = section.dataset.nav;
+        listItemLink.href = `#${section.id}`;
+        listItem.appendChild(listItemLink);
+        menu.appendChild(listItem);
+    });
+}
 
-    navSections.forEach(section => {
-        const sectionNav = createNavItem(section);
-        navbarList.appendChild(sectionNav);
-
-        sectionNav.addEventListener('click', (event) => {
+/**
+ * Function to add smooth scrolling behavior to navigation links.
+ */
+function addSmoothScroll() {
+    const navLinks = document.querySelectorAll('.menu__link');
+    navLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
             event.preventDefault();
-            updateActiveNavItem(sectionNav);
-            activeSection = section;
-            goToSection();
+            const sectionId = link.getAttribute('href').substring(1);
+            const section = document.getElementById(sectionId);
+
+            if (section) {
+                section.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }
         });
     });
-
-    // Initialize navItems after creating the menu
-    navItems = document.querySelectorAll('.menu__link');
 }
 
 /**
- * Function to create a navigation item.
- * @param {string} section - Section name
- * @returns {HTMLLIElement} - Navigation list item
+ * Function to highlight the active section in the viewport.
  */
-function createNavItem(section) {
-    const sectionNav = document.createElement('li');
-    sectionNav.innerText = section;
-    sectionNav.classList.add('menu__link');
-    return sectionNav;
-}
-
-/**
- * Function to update the active navigation item.
- * @param {HTMLElement} selectedNav - Selected navigation item
- */
-function updateActiveNavItem(selectedNav) {
-    navItems.forEach(nav => nav.classList.remove('active'));
-    selectedNav.classList.add('active');
-}
-
-/**
- * Function to handle smooth scrolling to the active section.
- */
-function goToSection() {
-    const sectionId = getSectionIdBySectionName(activeSection);
-    const section = document.getElementById(sectionId);
-
-    if (section) {
-        scrollToSection(section);
-    }
-}
-
-/**
- * Function to return the section ID based on the section name.
- * @param {string} sectionName - Section name
- * @returns {string} - Section ID
- */
-function getSectionIdBySectionName(sectionName) {
-    return sectionName.replace(' ', '').toLowerCase();
-}
-
-/**
- * Smoothly scrolls to the section.
- * @param {HTMLElement} section - Section element
- */
-function scrollToSection(section) {
-    const topPosition = section.offsetTop;
-    window.scroll({
-        top: topPosition,
-        behavior: 'smooth',
-    });
-}
-
-/**
- * Function to handle setting the active class based on the scrolled section in view.
- */
-function handleScrolling() {
+function highlightActiveSection() {
     const sections = document.querySelectorAll('section');
+    sections.forEach((section) => {
+        const bounding = section.getBoundingClientRect();
+        const navLinks = document.querySelectorAll('.menu__link');
 
-    window.addEventListener('scroll', () => {
-        let activeSect = null;
+        if (bounding.top >= -50 && bounding.top <= 300) {
+            section.classList.add('active');
 
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            const isInView = rect.top >= 0 && rect.top <= window.innerHeight / 2;
-
-            if (isInView) {
-                activeSect = section;
-            }
-        });
-
-        if (activeSect) {
-            const activeNavItem = Array.from(navItems).find(nav => 
-                nav.innerText.toLowerCase() === activeSect.id
-            );
-
-            if (activeNavItem) {
-                updateActiveNavItem(activeNavItem);
-            }
+            navLinks.forEach((link) => {
+                if (link.textContent === section.dataset.nav) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        } else {
+            section.classList.remove('active');
         }
     });
 }
